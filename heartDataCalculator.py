@@ -9,6 +9,7 @@
 # Put it in this folder
 
 from datetime import datetime
+import os
 
 def percentile(data, percent):
     # 50% means median
@@ -117,12 +118,25 @@ printMatlabCode = True
 printOutlierInfo = True
 #total = "["
 values = []
-names = ["Teja", "Rahul"]
-for name in names:
+iterations = 0;
+while(True):
     values = []
-    if name == "end":
+    fileName = ""
+    if iterations == 0:
+        fileName = input("Options:\n-Put in the path for the file you want to analyze\n-Type 'help' to list the .txt/.xml files in the current directory\n")
+    else:
+        fileName = input("Options:\n-Put in the path for the file you want to analyze\n-Type 'help' to list the .txt/.xml files in the current directory\n-Type 'end' to quit program)\n")
+    if fileName == "end" and iterations != 0:
         break
-    with open(name + "HeartData.txt") as f:
+    elif fileName == "help":
+        filesHere = [f for f in os.listdir('.') if os.path.isfile(f)]
+        for fileHere in filesHere:
+            if str(fileHere).endswith(".txt") or str(fileHere).endswith(".xml"):
+                print(fileHere)
+        print()
+        continue
+    iterations += 1
+    with open(fileName) as f:
         for line in f:
             firstHalf,secondHalf=line.split("startDate=\"",2)
             startDateStr,afterStartDateStr =  secondHalf.split("\" endDate=")
@@ -146,11 +160,14 @@ for name in names:
         print("MATLAB Code:")
         print("heartRates = " + str(values) + ";")
         print("histogram(heartRates);")
+        print("xlabel('Heart Rate in Beats Per Minute (bpm)')")
+        print("ylabel('Occurrences')")
+        print("title('Heart Rate Data for " + str(fileName) + "')")
         print("End of MATLAB Code")
 
     print()
 
-    print("Data Metrics For Raw Data For "+name)
+    print("Data Metrics For Raw Data For "+fileName)
     dataMetrics = printDataMetrics([values], [0,.1,.25,.5,.75,.9,1],True,0)
     med = dataMetrics[0]
     interquartileRange = dataMetrics[1]
@@ -169,7 +186,7 @@ for name in names:
         print("Cutoff for outliers: <"+str(round(med-1.5*interquartileRange,3))+" or " + " >"+str(round(med+1.5*interquartileRange,3)))
 
     print()
-    print("Data Metrics Without Outliers For "+ name)
+    print("Data Metrics Without Outliers For "+ fileName)
     printDataMetrics([noOutliers], [0,.1,.25,.5,.75,.9,1],True,0)
 
     print()
