@@ -40,6 +40,7 @@ def pstdev(data):
     pvar = ss/n # the population variance
     return pvar**0.5
 
+
 def printDataMetrics(setOfdata, percentagePlaces, showDistribution, roundExp):
     #find data metrics
     medians = []
@@ -47,15 +48,7 @@ def printDataMetrics(setOfdata, percentagePlaces, showDistribution, roundExp):
     iterations = 0
     #if not printDataVertically:
     #    print("Min \t10% \t25% \t50% \t75% \t90% \tMax")
-    label = ""
-    for percentagePlace in percentagePlaces:
-        if percentagePlace == 0:
-            label = label + "Min" +" \t"
-        elif percentagePlace == 1:
-            label = label + "Max" +" \t"
-        else:
-            label = label + str(percentagePlace*100)+"% \t"
-    print(label)
+    results = []
     for data in setOfdata:
         iterations += 1
         p = {}
@@ -97,16 +90,54 @@ def printDataMetrics(setOfdata, percentagePlaces, showDistribution, roundExp):
                 print("St.Dev.\t" + str(round(popstdev,3)))
                 print("Size\t" + str(len(data)))
         else:
-            results = ""
+            result = []
             for percentagePlace in percentagePlaces:
-                results = results+str(round(p[percentagePlace],roundExp)) +"\t\t"
-            print(results)
+                result.append(str(round(p[percentagePlace],roundExp)))
+            results.append(result)
             #print(str(minimum) + "\t\t"+str(round(p10))+ "\t\t" + str(round(p25))+ "\t\t" + str(round(med))+ "\t\t" + str(round(p75))+ "\t\t" + str(round(p90))+ "\t\t" + str(maximum))
             if showDistribution:
                 print("Avg. "+str(round(avg))+"\tSt.Dev. " + str(round(popstdev,3))+"\tSize " + str(len(data))+"\tMode " +str(max(set(data), key=data.count)))
         medians.append(med)
         interquartileRanges.append(interquartileRange)
 
+    if not printDataVertically:
+        label = []
+        padding = 2
+        for percentagePlace in percentagePlaces:
+            '''spaceLengths.append(0)
+            resultsWithLabel = []
+            resultsWithLabel.append(label)
+            resultsWithLabel.extend(results)
+            print(resultsWithLabel)
+            for resultPiece in resultsWithLabel:
+                spaceLengths[-1] = max(spaceLengths[-1], len(resultsWithLabel[len(spaceLengths)-1])+padding)'''
+
+            if percentagePlace == 0:
+                label.append("Min")
+            elif percentagePlace == 1:
+                label.append("Max")
+            else:
+                label.append(str(percentagePlace*100)+"%")
+        spaceLengths = []
+        resultsWithLabel = []
+        resultsWithLabel.append(label)
+        resultsWithLabel.extend(results)
+        for percentagePlace in range(len(resultsWithLabel[0]) ):
+            spaceLengths.append(0)
+            for resultPiece in resultsWithLabel:
+                newOption = len(resultPiece[len(spaceLengths)-1])+padding
+                spaceLengths[-1] = max(spaceLengths[-1], newOption)
+        labelStr = ""
+        for i in range(len(label)):
+            labelStr += label[i] + (" "*(spaceLengths[i]-len(label[i])) )
+        print(labelStr)
+        for i in range(len(results)):
+            resultStr = ""
+            resultPieceNum = 0
+            for resultPiece in results[i]:
+                resultStr += resultPiece + (" "*(spaceLengths[resultPieceNum]-len(resultPiece)))
+                resultPieceNum += 1
+            print("" + str(resultStr))
     if iterations==1:
         return (medians[0], interquartileRanges[0])
     else:
@@ -130,9 +161,13 @@ while(True):
         break
     elif fileName == "help":
         filesHere = [f for f in os.listdir('.') if os.path.isfile(f)]
+        printedCount = 0
         for fileHere in filesHere:
             if str(fileHere).endswith(".txt") or str(fileHere).endswith(".xml"):
                 print(fileHere)
+                printedCount += 1
+        if printedCount == 0:
+            print("No, files were found in this directory. You'll have to enter a path instead of a filename now to analyze or add files.")
         print()
         continue
     iterations += 1
